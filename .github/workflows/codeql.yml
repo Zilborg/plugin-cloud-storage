@@ -1,47 +1,29 @@
-name: "Code Scanning - Action"
+name: "CodeQL Scan"
 
 on:
   workflow_dispatch:
 
 jobs:
-  CodeQL-Build:
-    # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
-
     permissions:
-      # required for all workflows
-      security-events: write
-
-      # only required for workflows in private repositories
       actions: read
       contents: read
-
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'typescript' ]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Initializes the CodeQL tools for scanning.
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        # Override language selection by uncommenting this and choosing your languages
-        with:
-          languages: javascript, typescript
-
-      # Autobuild attempts to build any compiled languages (C/C++, C#, Go, or Java).
-      # If this step fails, then you should remove it and run the build manually (see below).
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
-
-      # ℹ️ Command-line programs to run using the OS shell.
-      # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-      # ✏️ If the Autobuild fails above, remove it and uncomment the following
-      #    three lines and modify them (or add more) to build your code if your
-      #    project uses a compiled language
-
-      #- run: |
-      #     make bootstrap
-      #     make release
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+    - name: Checkout repository
+      uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f #v2: v2.3.4 available
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-extended
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
